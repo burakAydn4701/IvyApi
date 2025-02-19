@@ -1,4 +1,3 @@
-
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -11,5 +10,6 @@ Rails.application.routes.draw do
 
   namespace :api do
     resources :communities
+    resources :posts
   end
 end
