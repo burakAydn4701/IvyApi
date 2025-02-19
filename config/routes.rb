@@ -18,5 +18,6 @@ Rails.application.routes.draw do
     resources :comments, only: [:index, :show, :create] do
       resource :upvote, only: [:create, :destroy]
     end
+    resources :upvotes, only: [:create, :destroy]
   end
 end
