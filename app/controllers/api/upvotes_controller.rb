@@ -1,7 +1,22 @@
 module Api
   class UpvotesController < ApplicationController
     def create
-      @upvote = Upvote.new(upvote_params)
+      @upvote = if upvote_params[:post_id]
+        # Upvoting a post
+        Upvote.new(
+          user_id: upvote_params[:user_id],
+          voteable_type: 'Post',
+          voteable_id: upvote_params[:post_id]
+        )
+      elsif upvote_params[:comment_id]
+        # Upvoting a comment
+        Upvote.new(
+          user_id: upvote_params[:user_id],
+          voteable_type: 'Comment',
+          voteable_id: upvote_params[:comment_id]
+        )
+      end
+
       if @upvote.save
         render json: @upvote, status: :created
       else
@@ -22,7 +37,7 @@ module Api
     private
 
     def upvote_params
-      params.require(:upvote).permit(:user_id, :voteable_type, :voteable_id)
+      params.require(:upvote).permit(:user_id, :post_id, :comment_id)
     end
   end
 end 
