@@ -18,6 +18,9 @@ gem "bootsnap", require: false
 # Move dotenv-rails out of groups so it's available in production
 gem 'dotenv-rails'
 
+# Remove or comment out thruster
+# gem "thruster", require: false
+
 # Remove solid gems that might be causing issues
 # gem "solid_cache"
 # gem "solid_queue"
