@@ -10,7 +10,13 @@ Rails.application.routes.draw do
 
   namespace :api do
     resources :communities
-    resources :posts
     resources :users
+    resources :posts do
+      resources :comments, shallow: true
+      resource :upvote, only: [:create, :destroy]
+    end
+    resources :comments, only: [:index, :show, :create] do
+      resource :upvote, only: [:create, :destroy]
+    end
   end
 end
