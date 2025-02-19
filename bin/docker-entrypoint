@@ -11,4 +11,9 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi
 
-exec "${@}"
+# Remove or comment out the line that tries to run thrust
+# /rails/bin/thrust
+
+# Add these lines instead
+rm -f /rails/tmp/pids/server.pid
+exec "$@"

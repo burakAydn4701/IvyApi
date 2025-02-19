@@ -28,6 +28,6 @@ RUN chmod +x /rails/bin/docker-entrypoint
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
 # Start the server by default
-CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
+CMD ["./bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
 
 #bir şeyler
