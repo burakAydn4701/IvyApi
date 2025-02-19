@@ -26,6 +26,9 @@ gem 'dotenv-rails'
 # gem "solid_queue"
 # gem "solid_cable"
 
+# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
+gem "rack-cors"
+
 group :development, :test do
   # Use sqlite3 as the database for development/test
   gem "sqlite3", "~> 1.4"
