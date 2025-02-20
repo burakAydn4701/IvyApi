@@ -23,14 +23,14 @@ class Community < ApplicationRecord
   def attach_profile_picture(image)
     if image.present?
       result = Cloudinary::Uploader.upload(image)
-      self.profile_picture_url = result['secure_url']
+      self.profile_photo = result['secure_url']
     end
   end
 
   def attach_banner(image)
     if image.present?
       result = Cloudinary::Uploader.upload(image)
-      self.banner_url = result['secure_url']
+      self.banner = result['secure_url']
     end
   end
 end

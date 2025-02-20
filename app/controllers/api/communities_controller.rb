@@ -22,7 +22,7 @@ module Api
       if @community.save
         render json: @community, status: :created
       else
-        render json: @community.errors, status: :unprocessable_entity
+        render json: { error: @community.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
