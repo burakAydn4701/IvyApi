@@ -1,10 +1,8 @@
 module Api
   class UpvotesController < ApplicationController
-    before_action :authenticate_user!
-
     def create
       @post = Post.find(params[:post_id])
-      user = User.find(params[:user_id])
+      user = User.find(params[:user_id])  # Use the user_id from the request
 
       if @post.upvotes.where(user: user).exists?
         render json: { error: "Already upvoted" }, status: :unprocessable_entity

@@ -1,6 +1,5 @@
 module Api
   class PostsController < ApplicationController
-    before_action :authenticate_user!
 
     def index
       @posts = if params[:community_id]
