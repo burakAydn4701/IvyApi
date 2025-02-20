@@ -11,8 +11,8 @@ class Post < ApplicationRecord
   # Add method to handle image upload
   def attach_image(image)
     if image.present?
-      uploaded_image = Cloudinary::Uploader.upload(image)
-      self.image_url = uploaded_image['secure_url']
+      result = Cloudinary::Uploader.upload(image)
+      self.image_url = result['secure_url']
     end
   end
 end
