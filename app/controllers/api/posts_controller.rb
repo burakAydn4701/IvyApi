@@ -21,14 +21,14 @@ module Api
       if @post.save
         render json: @post, status: :created
       else
-        render json: @post.errors, status: :unprocessable_entity
+        render json: { error: @post.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     private
 
     def post_params
-      params.require(:post).permit(:title, :content, :user_id, :community_id)
+      params.require(:post).permit(:title, :content, :user_id, :community_id, :image)
     end
   end
 end 

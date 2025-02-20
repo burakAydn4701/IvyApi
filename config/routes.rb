@@ -12,6 +12,7 @@ Rails.application.routes.draw do
     resources :communities do
       resources :posts, only: [:index]
     end
+    resources :posts, only: [:create]
     resources :users
     resources :posts do
       resources :comments, shallow: true
