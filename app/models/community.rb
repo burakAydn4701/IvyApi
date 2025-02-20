@@ -17,4 +17,6 @@ class Community < ApplicationRecord
       }
     ))
   end
+
+  has_many :posts
 end

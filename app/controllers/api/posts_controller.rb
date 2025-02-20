@@ -1,7 +1,11 @@
 module Api
   class PostsController < ApplicationController
     def index
-      @posts = Post.all
+      @posts = if params[:community_id]
+        Community.find(params[:community_id]).posts
+      else
+        Post.all
+      end
       render json: @posts
     end
 
