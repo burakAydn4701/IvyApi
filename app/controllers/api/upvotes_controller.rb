@@ -1,26 +1,16 @@
 module Api
   class UpvotesController < ApplicationController
-    def create
-      @upvote = if upvote_params[:post_id]
-        # Upvoting a post
-        Upvote.new(
-          user_id: upvote_params[:user_id],
-          voteable_type: 'Post',
-          voteable_id: upvote_params[:post_id]
-        )
-      elsif upvote_params[:comment_id]
-        # Upvoting a comment
-        Upvote.new(
-          user_id: upvote_params[:user_id],
-          voteable_type: 'Comment',
-          voteable_id: upvote_params[:comment_id]
-        )
-      end
+    before_action :authenticate_user!
 
-      if @upvote.save
-        render json: @upvote, status: :created
+    def create
+      @post = Post.find(params[:post_id])
+      user = User.find(params[:user_id])
+
+      if @post.upvotes.where(user: user).exists?
+        render json: { error: "Already upvoted" }, status: :unprocessable_entity
       else
-        render json: @upvote.errors, status: :unprocessable_entity
+        @post.upvotes.create(user: user)
+        render json: @post, status: :ok
       end
     end
 
@@ -37,7 +27,7 @@ module Api
     private
 
     def upvote_params
-      params.require(:upvote).permit(:user_id, :post_id, :comment_id)
+      params.require(:upvote).permit(:post_id)
     end
   end
 end 
