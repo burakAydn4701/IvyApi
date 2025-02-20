@@ -9,7 +9,9 @@ Rails.application.routes.draw do
   # root "posts#index"
 
   namespace :api do
-    resources :communities
+    resources :communities do
+      resources :posts, only: [:index]
+    end
     resources :users
     resources :posts do
       resources :comments, shallow: true
