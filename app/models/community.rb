@@ -22,15 +22,25 @@ class Community < ApplicationRecord
 
   def attach_profile_picture(image)
     if image.present?
-      result = Cloudinary::Uploader.upload(image)
-      self.profile_photo = result['secure_url']
+      begin
+        result = Cloudinary::Uploader.upload(image)
+        self.profile_photo = result['secure_url']
+      rescue => e
+        Rails.logger.error "Cloudinary upload failed: #{e.message}"
+        raise e
+      end
     end
   end
 
   def attach_banner(image)
     if image.present?
-      result = Cloudinary::Uploader.upload(image)
-      self.banner = result['secure_url']
+      begin
+        result = Cloudinary::Uploader.upload(image)
+        self.banner = result['secure_url']
+      rescue => e
+        Rails.logger.error "Cloudinary upload failed: #{e.message}"
+        raise e
+      end
     end
   end
 end
