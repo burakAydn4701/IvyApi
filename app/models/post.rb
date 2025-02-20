@@ -15,4 +15,8 @@ class Post < ApplicationRecord
       self.image_url = result['secure_url']
     end
   end
+
+  def upvote
+    increment!(:upvotes_count)
+  end
 end

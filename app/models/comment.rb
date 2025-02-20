@@ -6,4 +6,8 @@ class Comment < ApplicationRecord
   has_many :upvotes, as: :voteable
 
   validates :content, presence: true
+
+  def upvote
+    increment!(:upvotes_count)
+  end
 end
