@@ -15,14 +15,35 @@ module Api
 
     # POST /api/communities
     def create
+      Rails.logger.info "Params received: #{params.inspect}"
       @community = Community.new(community_params)
-      @community.attach_profile_picture(params[:community][:profile_picture]) if params[:community][:profile_picture].present?
-      @community.attach_banner(params[:community][:banner]) if params[:community][:banner].present?
+      
+      begin
+        if params[:community][:profile_picture].present?
+          Rails.logger.info "Attempting to attach profile picture"
+          @community.attach_profile_picture(params[:community][:profile_picture])
+        end
 
-      if @community.save
-        render json: @community, status: :created
-      else
-        render json: { error: @community.errors.full_messages }, status: :unprocessable_entity
+        if params[:community][:banner].present?
+          Rails.logger.info "Attempting to attach banner"
+          @community.attach_banner(params[:community][:banner])
+        end
+
+        if @community.save
+          Rails.logger.info "Community saved successfully"
+          render json: @community, status: :created
+        else
+          Rails.logger.error "Community save failed: #{@community.errors.full_messages}"
+          render json: { error: @community.errors.full_messages }, status: :unprocessable_entity
+        end
+      rescue => e
+        Rails.logger.error "Error during community creation: #{e.class.name} - #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        render json: { 
+          error: "Failed to create community", 
+          details: e.message,
+          backtrace: e.backtrace.first(5)
+        }, status: :internal_server_error
       end
     end
 
