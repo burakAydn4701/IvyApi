@@ -23,16 +23,8 @@ class Community < ApplicationRecord
   def attach_profile_picture(uploaded_file)
     if uploaded_file.present?
       begin
-        # Get the raw file data from the uploaded file
-        file = if uploaded_file.respond_to?(:tempfile)
-          uploaded_file.tempfile
-        else
-          uploaded_file
-        end
-        
-        # Upload directly to Cloudinary
-        result = Cloudinary::Uploader.upload(file)
-        self.profile_photo = result['secure_url']  # Direct assignment
+        result = Cloudinary::Uploader.upload(uploaded_file.tempfile.path)
+        self.profile_photo = result['secure_url']
       rescue => e
         Rails.logger.error "Cloudinary profile picture upload failed: #{e.message}"
         raise e
@@ -43,16 +35,8 @@ class Community < ApplicationRecord
   def attach_banner(uploaded_file)
     if uploaded_file.present?
       begin
-        # Get the raw file data from the uploaded file
-        file = if uploaded_file.respond_to?(:tempfile)
-          uploaded_file.tempfile
-        else
-          uploaded_file
-        end
-        
-        # Upload directly to Cloudinary
-        result = Cloudinary::Uploader.upload(file)
-        self.banner = result['secure_url']  # Direct assignment
+        result = Cloudinary::Uploader.upload(uploaded_file.tempfile.path)
+        self.banner = result['secure_url']
       rescue => e
         Rails.logger.error "Cloudinary banner upload failed: #{e.message}"
         raise e
