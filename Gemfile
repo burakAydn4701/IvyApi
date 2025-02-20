@@ -29,6 +29,9 @@ gem 'dotenv-rails'
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem "rack-cors"
 
+# Add cloudinary gem
+gem 'cloudinary'
+
 group :development, :test do
   # Use sqlite3 as the database for development/test
   gem "sqlite3", "~> 1.4"

@@ -12,6 +12,8 @@ module Api
 
     def create
       @post = Post.new(post_params)
+      @post.attach_image(params[:post][:image]) if params[:post][:image].present?
+      
       if @post.save
         render json: @post, status: :created
       else
