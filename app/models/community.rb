@@ -32,7 +32,7 @@ class Community < ApplicationRecord
         
         # Upload directly to Cloudinary
         result = Cloudinary::Uploader.upload(file)
-        update(profile_photo: result['secure_url'])
+        self.profile_photo = result['secure_url']  # Direct assignment
       rescue => e
         Rails.logger.error "Cloudinary profile picture upload failed: #{e.message}"
         raise e
@@ -52,7 +52,7 @@ class Community < ApplicationRecord
         
         # Upload directly to Cloudinary
         result = Cloudinary::Uploader.upload(file)
-        update(banner: result['secure_url'])
+        self.banner = result['secure_url']  # Direct assignment
       rescue => e
         Rails.logger.error "Cloudinary banner upload failed: #{e.message}"
         raise e

@@ -67,7 +67,7 @@ module Api
     private
 
     def community_params
-      params.require(:community).permit(:name, :description)
+      params.require(:community).permit(:name, :description, :profile_picture, :banner)
     end
   end
 end
