@@ -19,9 +19,9 @@ module Api
       @community = Community.new(community_params)
       
       begin
-        if params[:community][:profile_picture].present?
+        if params[:community][:profile_photo].present?
           Rails.logger.info "Attempting to attach profile picture"
-          @community.attach_profile_picture(params[:community][:profile_picture])
+          @community.attach_profile_picture(params[:community][:profile_photo])
         end
 
         if params[:community][:banner].present?
@@ -67,7 +67,7 @@ module Api
     private
 
     def community_params
-      params.require(:community).permit(:name, :description, :profile_picture, :banner)
+      params.require(:community).permit(:name, :description)
     end
   end
 end
