@@ -15,11 +15,14 @@ module Api
 
     # POST /api/communities
     def create
-      community = Community.new(community_params)
-      if community.save
-        render json: community, status: :created
+      @community = Community.new(community_params)
+      @community.attach_profile_picture(params[:community][:profile_picture]) if params[:community][:profile_picture].present?
+      @community.attach_banner(params[:community][:banner]) if params[:community][:banner].present?
+
+      if @community.save
+        render json: @community, status: :created
       else
-        render json: community.errors, status: :unprocessable_entity
+        render json: @community.errors, status: :unprocessable_entity
       end
     end
 
@@ -43,7 +46,7 @@ module Api
     private
 
     def community_params
-      params.require(:community).permit(:name, :description, :profile_photo, :banner)
+      params.require(:community).permit(:name, :description)
     end
   end
 end
