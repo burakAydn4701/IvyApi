@@ -32,6 +32,10 @@ gem "rack-cors"
 # Add cloudinary gem
 gem 'cloudinary'
 
+# Remove or comment out if present:
+# gem "aws-sdk-s3"
+# gem "image_processing"
+
 group :development, :test do
   # Use sqlite3 as the database for development/test
   gem "sqlite3", "~> 1.4"
