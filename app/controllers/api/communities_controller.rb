@@ -11,12 +11,7 @@ module Api
     def show
       @community = Community.find(params[:id])
       
-      render json: @community.as_json(
-        include: {
-          user: { only: [:id, :username] }  # Include creator info if needed
-        },
-        methods: [:members_count, :posts_count]  # Add posts_count if available
-      )
+      render json: @community.as_json(methods: [:members_count])
     end
 
     # POST /api/communities
@@ -75,12 +70,10 @@ module Api
     def posts
       @community = Community.find(params[:id])
       @posts = @community.posts.includes(:user, :comments)
-        .order(created_at: :desc)  # Sort by newest first
       
       render json: @posts.as_json(
         include: {
-          user: { only: [:id, :username] },
-          community: { only: [:id, :name] }  # Include community info
+          user: { only: [:id, :username] }
         },
         methods: [:comments_count, :upvotes_count]
       )
