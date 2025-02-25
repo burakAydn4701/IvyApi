@@ -10,10 +10,14 @@ class Upvote < ApplicationRecord
   private
 
   def increment_upvotes_count
-    voteable.increment!(:upvotes_count)
+    if voteable.respond_to?(:upvotes_count)
+      voteable.increment!(:upvotes_count)
+    end
   end
 
   def decrement_upvotes_count
-    voteable.decrement!(:upvotes_count)
+    if voteable.respond_to?(:upvotes_count)
+      voteable.decrement!(:upvotes_count)
+    end
   end
 end

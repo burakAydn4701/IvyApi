@@ -15,7 +15,8 @@ module Api
       @voteable = find_voteable
       @upvote = @voteable.upvotes.find_by(user_id: params[:user_id])
 
-      if @upvote&.destroy
+      if @upvote
+        @upvote.destroy
         render json: @voteable, status: :ok
       else
         render json: { error: "Upvote not found" }, status: :not_found
