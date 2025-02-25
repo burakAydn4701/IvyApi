@@ -10,7 +10,13 @@ module Api
     # GET /api/communities/:id
     def show
       @community = Community.find(params[:id])
-      render json: @community
+      
+      render json: @community.as_json(
+        include: {
+          user: { only: [:id, :username] }  # Include creator info if needed
+        },
+        methods: [:members_count, :posts_count]  # Add posts_count if available
+      )
     end
 
     # POST /api/communities
@@ -64,6 +70,20 @@ module Api
       community = Community.find(params[:id])
       community.destroy
       head :no_content
+    end
+
+    def posts
+      @community = Community.find(params[:id])
+      @posts = @community.posts.includes(:user, :comments)
+        .order(created_at: :desc)  # Sort by newest first
+      
+      render json: @posts.as_json(
+        include: {
+          user: { only: [:id, :username] },
+          community: { only: [:id, :name] }  # Include community info
+        },
+        methods: [:comments_count, :upvotes_count]
+      )
     end
 
     private
