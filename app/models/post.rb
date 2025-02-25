@@ -1,8 +1,8 @@
 class Post < ApplicationRecord
   belongs_to :user
   belongs_to :community
-  has_many :comments
-  has_many :upvotes, as: :voteable
+  has_many :comments, dependent: :destroy
+  has_many :upvotes, as: :voteable, dependent: :destroy
   has_one_attached :image
   
   validates :title, presence: true

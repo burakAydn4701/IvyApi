@@ -1,31 +1,37 @@
 module Api
   class UpvotesController < ApplicationController
     def create
-      @post = Post.find(params[:post_id])
-      user = User.find(params[:user_id])  # Use the user_id from the request
+      @voteable = find_voteable
+      @upvote = @voteable.upvotes.new(user_id: params[:user_id])
 
-      if @post.upvotes.where(user: user).exists?
-        render json: { error: "Already upvoted" }, status: :unprocessable_entity
+      if @upvote.save
+        render json: @voteable, status: :created
       else
-        @post.upvotes.create(user: user)
-        render json: @post, status: :ok
+        render json: { errors: @upvote.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def destroy
-      @upvote = Upvote.find_by!(
-        user_id: params[:user_id],
-        voteable_type: params[:voteable_type],
-        voteable_id: params[:voteable_id]
-      )
-      @upvote.destroy
-      head :no_content
+      @voteable = find_voteable
+      @upvote = @voteable.upvotes.find_by(user_id: params[:user_id])
+
+      if @upvote&.destroy
+        render json: @voteable, status: :ok
+      else
+        render json: { error: "Upvote not found" }, status: :not_found
+      end
     end
 
     private
 
-    def upvote_params
-      params.require(:upvote).permit(:post_id)
+    def find_voteable
+      if params[:post_id]
+        Post.find(params[:post_id])
+      elsif params[:comment_id]
+        Comment.find(params[:comment_id])
+      else
+        raise ActionController::RoutingError.new('Not Found')
+      end
     end
   end
 end 
