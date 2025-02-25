@@ -38,7 +38,7 @@ gem 'cloudinary'
 
 group :development, :test do
   # Use sqlite3 as the database for development/test
-  gem "sqlite3", "~> 1.4"
+  gem "sqlite3", "~> 2.6"
   
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
