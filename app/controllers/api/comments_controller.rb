@@ -2,11 +2,8 @@ module Api
   class CommentsController < ApplicationController
 
     def index
-      @comments = if params[:post_id]
-        Post.find(params[:post_id]).comments
-      else
-        Comment.all
-      end
+      @post = Post.find(params[:post_id])
+      @comments = @post.comments
       render json: @comments
     end
 
@@ -24,13 +21,22 @@ module Api
     end
 
     def create
-      @post = Post.find(params[:post_id])
-      @comment = @post.comments.new(comment_params)
+      if params[:post_id]
+        # Creating a comment on a post
+        @post = Post.find(params[:post_id])
+        @comment = @post.comments.new(comment_params)
+      elsif params[:comment_id]
+        # Creating a reply to a comment
+        parent_comment = Comment.find(params[:comment_id])
+        @comment = Comment.new(comment_params)
+        @comment.post = parent_comment.post
+        @comment.parent = parent_comment
+      end
       
-      if @comment.save
+      if @comment&.save
         render json: @comment, status: :created
       else
-        render json: { errors: @comment.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: @comment&.errors&.full_messages || ["Invalid parameters"] }, status: :unprocessable_entity
       end
     end
 
@@ -47,7 +53,7 @@ module Api
     private
 
     def comment_params
-      params.require(:comment).permit(:content, :user_id, :post_id, :parent_id)
+      params.require(:comment).permit(:content, :user_id)
     end
   end
 end 
