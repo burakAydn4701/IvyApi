@@ -12,7 +12,15 @@ module Api
 
     def show
       @comment = Comment.find(params[:id])
-      render json: @comment
+      render json: @comment.as_json(include: {
+        replies: { 
+          include: { 
+            user: { only: [:id, :username] },
+            replies: { include: :user }
+          }
+        },
+        user: { only: [:id, :username] }
+      })
     end
 
     def create
