@@ -16,13 +16,13 @@ Rails.application.routes.draw do
     resources :users
     resources :posts do
       resources :comments, shallow: true
-      resources :upvotes, only: [:create, :destroy]
+      resource :upvotes, only: [:create, :destroy]
       member do
         post 'upvote'
       end
     end
     resources :comments, only: [:index, :show, :create] do
-      resources :upvotes, only: [:create, :destroy]
+      resource :upvotes, only: [:create, :destroy]
       member do
         post 'upvote'
       end
