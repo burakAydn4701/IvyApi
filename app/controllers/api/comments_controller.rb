@@ -1,6 +1,5 @@
 module Api
   class CommentsController < ApplicationController
-    before_action :authenticate_user!
 
     def index
       @comments = if params[:post_id]
@@ -17,11 +16,13 @@ module Api
     end
 
     def create
-      @comment = Comment.new(comment_params)
+      @post = Post.find(params[:post_id])
+      @comment = @post.comments.new(comment_params)
+      
       if @comment.save
         render json: @comment, status: :created
       else
-        render json: @comment.errors, status: :unprocessable_entity
+        render json: { errors: @comment.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
