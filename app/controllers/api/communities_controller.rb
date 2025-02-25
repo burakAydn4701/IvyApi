@@ -11,7 +11,7 @@ module Api
     def show
       @community = Community.find(params[:id])
       
-      render json: @community.as_json(methods: [:members_count])
+      render json: @community
     end
 
     # POST /api/communities
