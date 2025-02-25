@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     resources :communities do
+      get 'posts', on: :member
       resources :posts, only: [:index]
     end
     resources :posts, only: [:create, :update, :destroy]
