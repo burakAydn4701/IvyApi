@@ -3,8 +3,18 @@ module Api
 
     def index
       @post = Post.find(params[:post_id])
-      @comments = @post.comments
-      render json: @comments
+      @comments = @post.comments.includes(:user, :replies)
+      
+      render json: @comments.as_json(
+        include: {
+          user: { only: [:id, :username] },
+          replies: { 
+            include: { user: { only: [:id, :username] } },
+            methods: [:replies_count, :upvotes_count]
+          }
+        },
+        methods: [:replies_count, :upvotes_count]
+      )
     end
 
     def show
