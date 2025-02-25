@@ -69,11 +69,12 @@ module Api
 
     def posts
       @community = Community.find(params[:id])
-      @posts = @community.posts.includes(:user, :comments)
+      @posts = @community.posts.includes(:user, :comments).order(created_at: :desc)
       
       render json: @posts.as_json(
         include: {
-          user: { only: [:id, :username] }
+          user: { only: [:id, :username] },
+          community: { only: [:id, :name] }
         },
         methods: [:comments_count, :upvotes_count]
       )
