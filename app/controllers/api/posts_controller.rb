@@ -2,12 +2,15 @@ module Api
   class PostsController < ApplicationController
 
     def index
-      @posts = if params[:community_id]
-        Community.find(params[:community_id]).posts
-      else
-        Post.all
-      end
-      render json: @posts
+      @posts = Post.all.includes(:community, :user, :comments)
+      
+      render json: @posts.as_json(
+        include: {
+          community: { only: [:id, :name] },
+          user: { only: [:id, :username] }
+        },
+        methods: [:comments_count, :upvotes_count]
+      )
     end
 
     def show
