@@ -60,6 +60,16 @@ module Api
       end
     end
 
+    def destroy
+      @comment = Comment.find(params[:id])
+      
+      if @comment.destroy
+        render json: { message: "Comment deleted successfully" }, status: :ok
+      else
+        render json: { errors: @comment.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
     private
 
     def comment_params

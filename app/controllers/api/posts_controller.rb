@@ -36,6 +36,16 @@ module Api
       end
     end
 
+    def destroy
+      @post = Post.find(params[:id])
+      
+      if @post.destroy
+        render json: { message: "Post deleted successfully" }, status: :ok
+      else
+        render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
     private
 
     def post_params
