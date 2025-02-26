@@ -19,4 +19,9 @@ class Post < ApplicationRecord
   def upvote
     increment!(:upvotes_count)
   end
+
+  # Method to get the author's name
+  def author_name
+    user.name
+  end
 end

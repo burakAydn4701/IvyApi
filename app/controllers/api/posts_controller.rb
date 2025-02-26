@@ -16,7 +16,7 @@ module Api
 
     def show
       @post = Post.find(params[:id])
-      render json: @post
+      render json: @post.as_json(methods: :author_name)
     end
 
     def create
@@ -24,9 +24,9 @@ module Api
       @post.attach_image(params[:post][:image]) if params[:post][:image].present?
       
       if @post.save
-        render json: @post, status: :created
+        render json: @post.as_json(methods: :author_name), status: :created
       else
-        render json: { error: @post.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
