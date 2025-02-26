@@ -1,6 +1,6 @@
 module Api
   class CommentsController < ApplicationController
-    before_action :authenticate_user, except: [:index, :show]
+    before_action :authenticate_user, except: [:index, :show], only: [:upvote, :destroy_upvote]
 
     def index
       @post = Post.find(params[:post_id])
@@ -62,7 +62,19 @@ module Api
         render json: { error: "Already upvoted" }, status: :unprocessable_entity
       else
         @comment.upvotes.create(user: current_user)
-        render json: @comment, status: :ok
+        render json: { success: true, upvotes_count: @comment.upvotes.count }
+      end
+    end
+
+    def destroy_upvote
+      @comment = Comment.find(params[:id])
+      upvote = @comment.upvotes.find_by(user: current_user)
+
+      if upvote
+        upvote.destroy
+        render json: { success: true, upvotes_count: @comment.upvotes.count }
+      else
+        render json: { error: "Upvote not found" }, status: :not_found
       end
     end
 
