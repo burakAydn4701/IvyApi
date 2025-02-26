@@ -1,6 +1,6 @@
 module Api
   class UpvotesController < ApplicationController
-    before_action :authenticate_user!
+    before_action :authenticate_user
 
     def create
       voteable = find_voteable
