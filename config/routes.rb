@@ -1,6 +1,4 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
   # Health check route
   get "up" => "rails/health#show", as: :rails_health_check
 
@@ -10,7 +8,7 @@ Rails.application.routes.draw do
       resources :posts, only: [:index]
     end
 
-    resources :posts, only: [:create, :update, :destroy] do
+    resources :posts, only: [:index, :create, :update, :destroy] do
       resources :comments, shallow: true
       resource :upvotes, only: [:create, :destroy]
     end
