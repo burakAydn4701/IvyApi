@@ -1,38 +1,33 @@
 module Api
   class UpvotesController < ApplicationController
-    def create
-      @voteable = find_voteable
-      @upvote = @voteable.upvotes.new(user_id: params[:user_id])
+    before_action :authenticate_user!
 
-      if @upvote.save
-        render json: @voteable, status: :created
+    def create
+      voteable = find_voteable
+      upvote = voteable.upvotes.new(user: current_user)
+
+      if upvote.save
+        render json: { success: true, upvotes_count: voteable.upvotes.count }
       else
-        render json: { errors: @upvote.errors.full_messages }, status: :unprocessable_entity
+        render json: { success: false, errors: upvote.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def destroy
-      @voteable = find_voteable
-      @upvote = @voteable.upvotes.find_by(user_id: params[:user_id])
+      voteable = find_voteable
+      upvote = voteable.upvotes.find_by(user: current_user)
 
-      if @upvote
-        @upvote.destroy
-        render json: @voteable, status: :ok
+      if upvote&.destroy
+        render json: { success: true, upvotes_count: voteable.upvotes.count }
       else
-        render json: { error: "Upvote not found" }, status: :not_found
+        render json: { success: false, message: "Unable to remove upvote" }, status: :unprocessable_entity
       end
     end
 
     private
 
     def find_voteable
-      if params[:post_id]
-        Post.find(params[:post_id])
-      elsif params[:comment_id]
-        Comment.find(params[:comment_id])
-      else
-        raise ActionController::RoutingError.new('Not Found')
-      end
+      params[:voteable_type].constantize.find(params[:voteable_id])
     end
   end
 end 
