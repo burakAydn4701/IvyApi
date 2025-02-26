@@ -14,14 +14,13 @@ module Api
     end
 
     def destroy
-      @voteable = find_voteable
-      @upvote = @voteable.upvotes.find_by(user_id: params[:user_id])
+      voteable = find_voteable
+      upvote = voteable.upvotes.find_by(user: current_user)
 
-      if @upvote
-        @upvote.destroy
-        render json: @voteable, status: :ok
+      if upvote&.destroy
+        render json: { success: true, upvotes_count: voteable.upvotes.count }
       else
-        render json: { error: "Upvote not found" }, status: :not_found
+        render json: { success: false, message: "Unable to remove upvote" }, status: :unprocessable_entity
       end
     end
 
