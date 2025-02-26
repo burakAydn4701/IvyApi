@@ -1,5 +1,6 @@
 module Api
   class CommentsController < ApplicationController
+    before_action :authenticate_user, except: [:index, :show]
 
     def index
       @post = Post.find(params[:post_id])

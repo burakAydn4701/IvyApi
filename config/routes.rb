@@ -14,7 +14,8 @@ Rails.application.routes.draw do
       resources :posts, only: [:index]
     end
     resources :posts, only: [:create, :update, :destroy]
-    resources :users
+    resources :users, only: [:create]
+    post '/login', to: 'sessions#create'
     resources :posts do
       resources :comments, shallow: true
       resource :upvotes, only: [:create, :destroy]
