@@ -22,6 +22,6 @@ class Post < ApplicationRecord
 
   # Method to get the author's name
   def author_name
-    user.name
+    user.username if user.present?
   end
 end

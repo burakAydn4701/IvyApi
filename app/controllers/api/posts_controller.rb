@@ -15,8 +15,14 @@ module Api
     end
 
     def show
-      @post = Post.find(params[:id])
-      render json: @post.as_json(methods: :author_name)
+      @post = Post.includes(:user, :community).find(params[:id])
+      render json: @post.as_json(
+        include: {
+          community: { only: [:id, :name] },
+          user: { only: [:id, :username] }
+        },
+        methods: [:comments_count, :upvotes_count]
+      )
     end
 
     def create
