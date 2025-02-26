@@ -13,14 +13,21 @@ Rails.application.routes.draw do
       get 'posts', on: :member
       resources :posts, only: [:index]
     end
-    resources :posts, only: [:create, :update, :destroy] do
-      resources :comments, shallow: true
-      resource :upvotes, only: [:create, :destroy]
-    end
+    resources :posts, only: [:create, :update, :destroy]
     resources :users, only: [:create]
     post '/login', to: 'sessions#create'
+    resources :posts do
+      resources :comments, shallow: true
+      resource :upvotes, only: [:create, :destroy]
+      member do
+        post 'upvote'
+      end
+    end
     resources :comments, only: [:index, :show, :create, :destroy] do
       resource :upvotes, only: [:create, :destroy]
+      member do
+        post 'upvote'
+      end
     end
     resources :comments, only: [:show, :destroy] do
       resource :upvotes, only: [:create, :destroy]
