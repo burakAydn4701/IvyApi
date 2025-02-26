@@ -26,13 +26,14 @@ module Api
     end
 
     def create
-      @post = Post.new(post_params)
-      @post.attach_image(params[:post][:image]) if params[:post][:image].present?
+      post = Post.new(post_params)
+      post.user = current_user
+      post.attach_image(params[:post][:image]) if params[:post][:image].present?
       
-      if @post.save
-        render json: @post.as_json(methods: :author_name), status: :created
+      if post.save
+        render json: post.as_json(methods: :author_name), status: :created
       else
-        render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: post.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
@@ -59,7 +60,7 @@ module Api
     private
 
     def post_params
-      params.require(:post).permit(:title, :content, :user_id, :community_id)
+      params.require(:post).permit(:title, :content, :community_id)
     end
   end
 end 
