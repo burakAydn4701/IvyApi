@@ -24,4 +24,8 @@ class Post < ApplicationRecord
   def author_name
     user.username if user.present?
   end
+
+  def upvoted_by_current_user(current_user)
+    upvotes.exists?(user: current_user)
+  end
 end

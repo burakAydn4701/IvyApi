@@ -10,6 +10,10 @@ class Comment < ApplicationRecord
   def upvote
     increment!(:upvotes_count)
   end
+
+  def upvoted_by_current_user(current_user)
+    upvotes.exists?(user: current_user)
+  end
 end
 
 Post.find_each { |post| Post.reset_counters(post.id, :comments) }

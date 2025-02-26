@@ -5,13 +5,15 @@ module Api
     def index
       @posts = Post.all.includes(:community, :user, :comments)
       
-      render json: @posts.as_json(
-        include: {
-          community: { only: [:id, :name] },
-          user: { only: [:id, :username] }
-        },
-        methods: [:comments_count, :upvotes_count]
-      )
+      render json: @posts.map { |post|
+        post.as_json(
+          include: {
+            community: { only: [:id, :name] },
+            user: { only: [:id, :username] }
+          },
+          methods: [:comments_count, :upvotes_count]
+        ).merge(upvoted_by_current_user: post.upvoted_by_current_user(current_user))
+      }
     end
 
     def show
@@ -22,7 +24,7 @@ module Api
           user: { only: [:id, :username] }
         },
         methods: [:comments_count, :upvotes_count]
-      )
+      ).merge(upvoted_by_current_user: @post.upvoted_by_current_user(current_user))
     end
 
     def create

@@ -6,29 +6,34 @@ module Api
       @post = Post.find(params[:post_id])
       @comments = @post.comments.includes(:user, :replies)
       
-      render json: @comments.as_json(
-        include: {
-          user: { only: [:id, :username] },
-          replies: { 
-            include: { user: { only: [:id, :username] } },
-            methods: [:replies_count, :upvotes_count]
-          }
-        },
-        methods: [:replies_count, :upvotes_count]
-      )
+      render json: @comments.map { |comment|
+        comment.as_json(
+          include: {
+            user: { only: [:id, :username] },
+            replies: { 
+              include: { user: { only: [:id, :username] } },
+              methods: [:replies_count, :upvotes_count]
+            }
+          },
+          methods: [:replies_count, :upvotes_count]
+        ).merge(upvoted_by_current_user: comment.upvoted_by_current_user(current_user))
+      }
     end
 
     def show
       @comment = Comment.find(params[:id])
-      render json: @comment.as_json(include: {
-        replies: { 
-          include: { 
-            user: { only: [:id, :username] },
-            replies: { include: :user }
-          }
+      render json: @comment.as_json(
+        include: {
+          replies: { 
+            include: { 
+              user: { only: [:id, :username] },
+              replies: { include: :user }
+            }
+          },
+          user: { only: [:id, :username] }
         },
-        user: { only: [:id, :username] }
-      })
+        methods: [:upvotes_count]
+      ).merge(upvoted_by_current_user: @comment.upvoted_by_current_user(current_user))
     end
 
     def create
