@@ -36,7 +36,23 @@ module Api
 
     def update_profile_photo
       begin
-        if params[:profile_photo_base64].present?
+        if params[:user] && params[:user][:profile_photo].present?
+          # Handle file upload from FormData
+          Rails.logger.info "Received file upload via FormData"
+          
+          result = Cloudinary::Uploader.upload(
+            params[:user][:profile_photo], 
+            folder: "user_profiles", 
+            public_id: "user_#{current_user.id}",
+            resource_type: "auto" # Let Cloudinary auto-detect the resource type
+          )
+          
+          if current_user.update(profile_photo_url: result['secure_url'])
+            render json: { success: true, profile_photo_url: current_user.profile_photo_url }
+          else
+            render json: { success: false, errors: current_user.errors.full_messages }, status: :unprocessable_entity
+          end
+        elsif params[:profile_photo_base64].present?
           # Log the first few characters of the base64 string for debugging
           Rails.logger.info "Received base64 string (first 30 chars): #{params[:profile_photo_base64][0..30]}"
           
