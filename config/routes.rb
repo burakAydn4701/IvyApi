@@ -2,6 +2,9 @@ Rails.application.routes.draw do
   # Health check route
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # Mount Action Cable server
+  mount ActionCable.server => '/cable'
+
   namespace :api do
     resources :communities do
       get 'posts', on: :member
