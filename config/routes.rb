@@ -29,5 +29,10 @@ Rails.application.routes.draw do
         post :update_profile_photo
       end
     end
+    
+    # Chat routes (renamed from conversations)
+    resources :chats, only: [:index, :show, :create] do
+      resources :messages, only: [:create]
+    end
   end
 end
