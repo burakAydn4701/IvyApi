@@ -23,17 +23,57 @@ module Api
     end
 
     def update
-      if params[:profile_photo].present?
-        # Upload to Cloudinary
-        result = Cloudinary::Uploader.upload(params[:profile_photo], 
-          folder: "user_profiles", 
-          public_id: "user_#{current_user.id}")
+      begin
+        # Log what parameters we're receiving
+        Rails.logger.info "Update params: #{params.to_json}"
         
-        # Update user with the Cloudinary URL
-        current_user.update(profile_photo_url: result['secure_url'])
+        # Handle profile photo upload if present
+        if params[:profile_photo].present?
+          Rails.logger.info "Found profile_photo parameter in update"
+          photo_param = params[:profile_photo]
+          
+          # Upload to Cloudinary
+          result = Cloudinary::Uploader.upload(
+            photo_param, 
+            folder: "user_profiles", 
+            public_id: "user_#{current_user.id}",
+            resource_type: "auto"
+          )
+          
+          # Update user with the Cloudinary URL
+          current_user.update(profile_photo_url: result['secure_url'])
+        elsif params[:user] && params[:user][:profile_photo].present?
+          Rails.logger.info "Found user[profile_photo] parameter in update"
+          photo_param = params[:user][:profile_photo]
+          
+          # Upload to Cloudinary
+          result = Cloudinary::Uploader.upload(
+            photo_param, 
+            folder: "user_profiles", 
+            public_id: "user_#{current_user.id}",
+            resource_type: "auto"
+          )
+          
+          # Update user with the Cloudinary URL
+          current_user.update(profile_photo_url: result['secure_url'])
+        end
+        
+        # Update other user attributes if provided
+        if params[:user].present?
+          user_update_params = params.require(:user).permit(:username, :email)
+          if current_user.update(user_update_params)
+            render json: current_user, status: :ok
+          else
+            render json: { errors: current_user.errors.full_messages }, status: :unprocessable_entity
+          end
+        else
+          render json: current_user, status: :ok
+        end
+      rescue => e
+        Rails.logger.error "Error in update: #{e.class.name} - #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        render json: { success: false, message: "Server error: #{e.message}" }, status: :unprocessable_entity
       end
-      
-      # ... rest of update method ...
     end
 
     def update_profile_photo
