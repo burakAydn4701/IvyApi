@@ -40,9 +40,21 @@ module Api
           # Log the first few characters of the base64 string for debugging
           Rails.logger.info "Received base64 string (first 30 chars): #{params[:profile_photo_base64][0..30]}"
           
+          # Extract the image format from the base64 string if it contains the format info
+          base64_data = params[:profile_photo_base64]
+          
+          # Check if the base64 string already includes the data URI prefix
+          if base64_data.start_with?('data:image')
+            # The string already has the data URI format
+            upload_data = base64_data
+          else
+            # Default to PNG if format can't be determined
+            upload_data = "data:image/png;base64,#{base64_data}"
+          end
+          
           # Try to upload to Cloudinary
           result = Cloudinary::Uploader.upload(
-            "data:image/png;base64,#{params[:profile_photo_base64]}", 
+            upload_data, 
             folder: "user_profiles", 
             public_id: "user_#{current_user.id}"
           )
