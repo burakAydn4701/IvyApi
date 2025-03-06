@@ -20,5 +20,8 @@ Rails.application.routes.draw do
       resource :upvotes, only: [:create, :destroy]
       resources :comments, only: [:create], shallow: true
     end
+
+    # Add this line to allow direct upvote creation/deletion
+    resources :upvotes, only: [:create, :destroy]
   end
 end

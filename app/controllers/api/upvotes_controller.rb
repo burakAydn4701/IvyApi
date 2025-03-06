@@ -3,6 +3,9 @@ module Api
     before_action :authenticate_user
 
     def create
+      # Add debugging
+      Rails.logger.info "Params received: #{params.inspect}"
+      
       voteable = find_voteable
       upvote = voteable.upvotes.new(user: current_user)
 
@@ -27,7 +30,15 @@ module Api
     private
 
     def find_voteable
-      params[:voteable_type].constantize.find(params[:voteable_id])
+      if params[:post_id].present?
+        Post.find(params[:post_id])
+      elsif params[:comment_id].present?
+        Comment.find(params[:comment_id])
+      elsif params[:voteable_type].present? && params[:voteable_id].present?
+        params[:voteable_type].constantize.find(params[:voteable_id])
+      else
+        raise ActionController::ParameterMissing, "Missing voteable parameters"
+      end
     end
   end
 end 
