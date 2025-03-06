@@ -23,5 +23,11 @@ Rails.application.routes.draw do
 
     # Add this line to allow direct upvote creation/deletion
     resources :upvotes, only: [:create, :destroy]
+
+    resources :users do
+      member do
+        post :update_profile_photo
+      end
+    end
   end
 end
