@@ -41,22 +41,34 @@ module Api
           Rails.logger.info "Received base64 string (first 30 chars): #{params[:profile_photo_base64][0..30]}"
           
           # Extract the image format from the base64 string if it contains the format info
-          base64_data = params[:profile_photo_base64]
+          base64_data = params[:profile_photo_base64].to_s.strip
           
-          # Check if the base64 string already includes the data URI prefix
+          # Validate the base64 string format
           if base64_data.start_with?('data:image')
             # The string already has the data URI format
             upload_data = base64_data
           else
-            # Default to PNG if format can't be determined
-            upload_data = "data:image/png;base64,#{base64_data}"
+            # Check if it's a valid base64 string
+            # Remove any whitespace that might cause issues
+            cleaned_base64 = base64_data.gsub(/\s+/, '')
+            
+            # Try to decode the base64 string to validate it
+            begin
+              Base64.strict_decode64(cleaned_base64)
+              # If we get here, it's valid base64
+              upload_data = "data:image/png;base64,#{cleaned_base64}"
+            rescue ArgumentError => e
+              Rails.logger.error "Invalid base64 string: #{e.message}"
+              return render json: { success: false, message: "Invalid image data format" }, status: :bad_request
+            end
           end
           
           # Try to upload to Cloudinary
           result = Cloudinary::Uploader.upload(
             upload_data, 
             folder: "user_profiles", 
-            public_id: "user_#{current_user.id}"
+            public_id: "user_#{current_user.id}",
+            resource_type: "auto" # Let Cloudinary auto-detect the resource type
           )
           
           if current_user.update(profile_photo_url: result['secure_url'])
@@ -67,9 +79,13 @@ module Api
         else
           render json: { success: false, message: "No profile photo provided" }, status: :bad_request
         end
+      rescue Cloudinary::Api::Error => e
+        Rails.logger.error "Cloudinary API Error: #{e.message}"
+        render json: { success: false, message: "Image upload failed: #{e.message}" }, status: :unprocessable_entity
       rescue => e
-        Rails.logger.error "Error uploading to Cloudinary: #{e.message}"
-        render json: { success: false, message: e.message }, status: :unprocessable_entity
+        Rails.logger.error "Error uploading to Cloudinary: #{e.class.name} - #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        render json: { success: false, message: "Server error: #{e.message}" }, status: :unprocessable_entity
       end
     end
 
