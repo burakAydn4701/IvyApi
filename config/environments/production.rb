@@ -84,4 +84,15 @@ Rails.application.configure do
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  
+  # Action Cable configuration for production
+  config.action_cable.url = 'wss://ivyruby-production.up.railway.app/cable'
+  config.action_cable.allowed_request_origins = [
+    'https://ivyruby-production.up.railway.app',
+    /https?:\/\/.*\.up\.railway\.app/,
+    /https?:\/\/localhost:.*/
+  ]
+  
+  # Disable request forgery protection for Action Cable in production
+  config.action_cable.disable_request_forgery_protection = true
 end
