@@ -1,5 +1,7 @@
 module Api
   class UsersController < ApplicationController
+    before_action :authenticate_user, except: [:index, :show, :create]
+
     def index
       @users = User.all
       render json: @users
@@ -36,55 +38,36 @@ module Api
 
     def update_profile_photo
       begin
-        if params[:user] && params[:user][:profile_photo].present?
-          # Handle file upload from FormData
-          Rails.logger.info "Received file upload via FormData"
-          
-          result = Cloudinary::Uploader.upload(
-            params[:user][:profile_photo], 
-            folder: "user_profiles", 
-            public_id: "user_#{current_user.id}",
-            resource_type: "auto" # Let Cloudinary auto-detect the resource type
-          )
-          
-          if current_user.update(profile_photo_url: result['secure_url'])
-            render json: { success: true, profile_photo_url: current_user.profile_photo_url }
-          else
-            render json: { success: false, errors: current_user.errors.full_messages }, status: :unprocessable_entity
-          end
+        # Log what parameters we're receiving
+        Rails.logger.info "Profile photo update params: #{params.to_json}"
+        
+        # Check all possible parameter locations
+        if params[:profile_photo].present?
+          # Same parameter name as in the regular update method
+          photo_param = params[:profile_photo]
+          Rails.logger.info "Found profile_photo parameter"
+        elsif params[:user] && params[:user][:profile_photo].present?
+          # Nested under user, like in post creation
+          photo_param = params[:user][:profile_photo]
+          Rails.logger.info "Found user[profile_photo] parameter"
         elsif params[:profile_photo_base64].present?
-          # Log the first few characters of the base64 string for debugging
-          Rails.logger.info "Received base64 string (first 30 chars): #{params[:profile_photo_base64][0..30]}"
-          
-          # Extract the image format from the base64 string if it contains the format info
+          # Base64 format
           base64_data = params[:profile_photo_base64].to_s.strip
+          Rails.logger.info "Found profile_photo_base64 parameter"
           
-          # Validate the base64 string format
+          # Process base64 data
           if base64_data.start_with?('data:image')
-            # The string already has the data URI format
             upload_data = base64_data
           else
-            # Check if it's a valid base64 string
-            # Remove any whitespace that might cause issues
-            cleaned_base64 = base64_data.gsub(/\s+/, '')
-            
-            # Try to decode the base64 string to validate it
-            begin
-              Base64.strict_decode64(cleaned_base64)
-              # If we get here, it's valid base64
-              upload_data = "data:image/png;base64,#{cleaned_base64}"
-            rescue ArgumentError => e
-              Rails.logger.error "Invalid base64 string: #{e.message}"
-              return render json: { success: false, message: "Invalid image data format" }, status: :bad_request
-            end
+            upload_data = "data:image/png;base64,#{base64_data.gsub(/\s+/, '')}"
           end
           
-          # Try to upload to Cloudinary
+          # Upload to Cloudinary
           result = Cloudinary::Uploader.upload(
             upload_data, 
             folder: "user_profiles", 
             public_id: "user_#{current_user.id}",
-            resource_type: "auto" # Let Cloudinary auto-detect the resource type
+            resource_type: "auto"
           )
           
           if current_user.update(profile_photo_url: result['secure_url'])
@@ -92,12 +75,26 @@ module Api
           else
             render json: { success: false, errors: current_user.errors.full_messages }, status: :unprocessable_entity
           end
+          return
         else
           render json: { success: false, message: "No profile photo provided" }, status: :bad_request
+          return
         end
-      rescue Cloudinary::Api::Error => e
-        Rails.logger.error "Cloudinary API Error: #{e.message}"
-        render json: { success: false, message: "Image upload failed: #{e.message}" }, status: :unprocessable_entity
+        
+        # Handle file upload (for non-base64 cases)
+        Rails.logger.info "Uploading file to Cloudinary"
+        result = Cloudinary::Uploader.upload(
+          photo_param, 
+          folder: "user_profiles", 
+          public_id: "user_#{current_user.id}",
+          resource_type: "auto"
+        )
+        
+        if current_user.update(profile_photo_url: result['secure_url'])
+          render json: { success: true, profile_photo_url: current_user.profile_photo_url }
+        else
+          render json: { success: false, errors: current_user.errors.full_messages }, status: :unprocessable_entity
+        end
       rescue => e
         Rails.logger.error "Error uploading to Cloudinary: #{e.class.name} - #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
