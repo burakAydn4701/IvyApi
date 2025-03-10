@@ -26,7 +26,12 @@ module Api
     end
 
     def create
-      @post = current_user.posts.new(post_params)
+      @post = current_user.posts.new(post_params.except(:image))
+      
+      # Handle image upload if present
+      if params[:post] && params[:post][:image].present?
+        @post.attach_image(params[:post][:image])
+      end
       
       if @post.save
         render json: post_json(@post), status: :created
@@ -36,7 +41,12 @@ module Api
     end
 
     def update
-      if @post.update(post_params)
+      # Handle image update if present
+      if params[:post] && params[:post][:image].present?
+        @post.attach_image(params[:post][:image])
+      end
+      
+      if @post.update(post_params.except(:image))
         render json: post_json(@post)
       else
         render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
