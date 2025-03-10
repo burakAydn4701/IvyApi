@@ -29,4 +29,9 @@ class Chat < ApplicationRecord
   def opposed_user(current_user)
     current_user.id == sender_id ? recipient : sender
   end
+  
+  def self.between_users(user1, user2)
+    where(sender: user1, recipient: user2)
+      .or(where(sender: user2, recipient: user1))
+  end
 end 
