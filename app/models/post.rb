@@ -2,7 +2,7 @@ class Post < ApplicationRecord
   belongs_to :user
   belongs_to :community, optional: true
   has_many :comments, dependent: :destroy
-  has_many :upvotes, as: :upvotable, dependent: :destroy
+  has_many :upvotes, as: :voteable, dependent: :destroy
   has_one_attached :image
   
   validates :title, presence: true
@@ -32,5 +32,15 @@ class Post < ApplicationRecord
 
   def upvoted_by_current_user(current_user)
     upvotes.exists?(user: current_user)
+  end
+  
+  # Helper method to get upvotes count safely
+  def upvotes_count
+    # Use the database counter cache if available, otherwise count manually
+    if has_attribute?(:upvotes_count) && self[:upvotes_count].present?
+      self[:upvotes_count]
+    else
+      upvotes.count
+    end
   end
 end
