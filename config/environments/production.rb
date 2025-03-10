@@ -88,11 +88,18 @@ Rails.application.configure do
   # Action Cable configuration for production
   config.action_cable.url = 'wss://ivyruby-production.up.railway.app/cable'
   config.action_cable.allowed_request_origins = [
+    'https://ivy-front.vercel.app',
+    'https://ivy-front-git-main-buraks-projects-c77137f8.vercel.app',
+    'https://ivy-front-mr2soxhmi-buraks-projects-c77137f8.vercel.app',
     'https://ivyruby-production.up.railway.app',
     /https?:\/\/.*\.up\.railway\.app/,
+    /https?:\/\/.*\.vercel\.app/,
     /https?:\/\/localhost:.*/
   ]
   
   # Disable request forgery protection for Action Cable in production
   config.action_cable.disable_request_forgery_protection = true
+  
+  # Set Action Cable worker pool size
+  config.action_cable.worker_pool_size = 4
 end
