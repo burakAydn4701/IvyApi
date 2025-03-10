@@ -13,10 +13,16 @@ class Post < ApplicationRecord
     content
   end
 
-  # Add method to handle image upload
+  # Updated method to handle image upload with WebP support
   def attach_image(image)
     if image.present?
-      result = Cloudinary::Uploader.upload(image)
+      # Add WebP support with minimal changes
+      upload_options = {
+        resource_type: "auto",  # Auto-detect resource type
+        allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"]  # Explicitly allow webp
+      }
+      
+      result = Cloudinary::Uploader.upload(image, upload_options)
       self.image_url = result['secure_url']
     end
   end
