@@ -7,7 +7,7 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins 'localhost:3000', 'your-frontend-domain.com', 'https://ivy-front-ozeimdg5r-buraks-projects-c77137f8.vercel.app/', 'https://ivy-front-git-main-buraks-projects-c77137f8.vercel.app/', 'https://ivy-front.vercel.app/'  # Add your frontend domains here
+    origins 'localhost:3000', 'your-frontend-domain.com', 'https://ivy-front-ozeimdg5r-buraks-projects-c77137f8.vercel.app', 'https://ivy-front-git-main-buraks-projects-c77137f8.vercel.app', 'https://ivy-front.vercel.app'  # Add your frontend domains here
     
     resource '*',
       headers: :any,
