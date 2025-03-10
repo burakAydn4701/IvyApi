@@ -1,42 +1,47 @@
 module Api
   class PostsController < ApplicationController
-    before_action :authenticate_user, except: [:index, :show, :create]
+    before_action :authenticate_user, except: [:index, :show, :user_posts]
+    before_action :set_post, only: [:show, :update, :destroy]
+    before_action :authorize_user, only: [:update, :destroy]
 
     def index
-      @posts = Post.all.includes(:community, :user, :comments)
+      @posts = Post.includes(:user, :community).order(created_at: :desc)
       
-      render json: @posts.map { |post|
-        post.as_json(
-          include: {
-            community: { only: [:id, :name] },
-            user: { only: [:id, :username] }
-          },
-          methods: [:comments_count, :upvotes_count]
-        ).merge(upvoted_by_current_user: post.upvoted_by_current_user(current_user))
-      }
+      render json: @posts.map { |post| post_json(post) }
     end
 
     def show
-      @post = Post.includes(:user, :community).find(params[:id])
-      render json: @post.as_json(
-        include: {
-          community: { only: [:id, :name] },
-          user: { only: [:id, :username] }
-        },
-        methods: [:comments_count, :upvotes_count]
-      ).merge(upvoted_by_current_user: @post.upvoted_by_current_user(current_user))
+      render json: post_json(@post)
+    end
+
+    def user_posts
+      user = User.find(params[:user_id])
+      @posts = user.posts.includes(:community).order(created_at: :desc)
+      
+      render json: @posts.map { |post| post_json(post) }
     end
 
     def create
-      post = Post.new(post_params)
-      post.user = current_user
-      post.attach_image(params[:post][:image]) if params[:post][:image].present?
+      @post = current_user.posts.new(post_params)
       
-      if post.save
-        render json: post.as_json(methods: :author_name), status: :created
+      if @post.save
+        render json: post_json(@post), status: :created
       else
-        render json: { errors: post.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
       end
+    end
+
+    def update
+      if @post.update(post_params)
+        render json: post_json(@post)
+      else
+        render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
+    def destroy
+      @post.destroy
+      head :no_content
     end
 
     def upvote
@@ -49,20 +54,41 @@ module Api
       end
     end
 
-    def destroy
+    private
+
+    def set_post
       @post = Post.find(params[:id])
-      
-      if @post.destroy
-        render json: { message: "Post deleted successfully" }, status: :ok
-      else
-        render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
+    end
+
+    def authorize_user
+      unless @post.user_id == current_user.id
+        render json: { error: "Not authorized to modify this post" }, status: :unauthorized
       end
     end
 
-    private
-
     def post_params
-      params.require(:post).permit(:title, :content, :community_id)
+      params.require(:post).permit(:title, :body, :community_id)
+    end
+
+    def post_json(post)
+      {
+        id: post.id,
+        title: post.title,
+        body: post.body,
+        created_at: post.created_at,
+        updated_at: post.updated_at,
+        user: {
+          id: post.user.id,
+          username: post.user.username,
+          profile_photo_url: post.user.profile_photo_url
+        },
+        community: post.community ? {
+          id: post.community.id,
+          name: post.community.name
+        } : nil,
+        comments_count: post.comments.count,
+        upvotes_count: post.upvotes.count
+      }
     end
   end
 end 
