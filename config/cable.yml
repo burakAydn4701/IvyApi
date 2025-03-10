@@ -4,7 +4,9 @@
 # to make the web console appear.
 # Action Cable uses Redis by default to ensure real-time communication works across multiple servers
 development:
-  adapter: async
+  adapter: redis
+  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
+  channel_prefix: ivy_ruby_api_development
 
 test:
   adapter: test
@@ -13,3 +15,5 @@ production:
   adapter: redis
   url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
   channel_prefix: ivy_ruby_api_production
+  ssl_params:
+    verify_mode: <%= OpenSSL::SSL::VERIFY_NONE %>

@@ -100,6 +100,8 @@ GEM
       railties (>= 6.1)
     drb (2.2.1)
     erubi (1.13.1)
+    et-orbi (1.2.11)
+      tzinfo
     faraday (2.12.2)
       faraday-net_http (>= 2.0, < 3.5)
       json
@@ -110,8 +112,18 @@ GEM
       multipart-post (~> 2.0)
     faraday-net_http (3.4.0)
       net-http (>= 0.5.0)
+    fugit (1.11.1)
+      et-orbi (~> 1, >= 1.2.11)
+      raabro (~> 1.4)
     globalid (1.2.1)
       activesupport (>= 6.1)
+    good_job (3.99.1)
+      activejob (>= 6.0.0)
+      activerecord (>= 6.0.0)
+      concurrent-ruby (>= 1.0.2)
+      fugit (>= 1.1)
+      railties (>= 6.0.0)
+      thor (>= 0.14.1)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     io-console (0.8.0)
@@ -119,6 +131,9 @@ GEM
       pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
+    jbuilder (2.13.0)
+      actionview (>= 5.0.0)
+      activesupport (>= 5.0.0)
     json (2.10.1)
     jwt (2.10.1)
       base64
@@ -179,6 +194,7 @@ GEM
       stringio
     puma (6.6.0)
       nio4r (~> 2.0)
+    raabro (1.4.0)
     racc (1.8.1)
     rack (3.1.10)
     rack-cors (2.0.2)
@@ -223,6 +239,10 @@ GEM
     rake (13.2.1)
     rdoc (6.12.0)
       psych (>= 4.0.0)
+    redis (5.4.0)
+      redis-client (>= 0.22.0)
+    redis-client (0.24.0)
+      connection_pool
     regexp_parser (2.10.0)
     reline (0.6.0)
       io-console (~> 0.5)
@@ -292,17 +312,20 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  bcrypt (~> 3.1.7)
-  bootsnap
+  bcrypt (~> 3.1.20)
+  bootsnap (~> 1.18)
   brakeman
   cloudinary
-  debug
+  debug (~> 1.9)
   dotenv-rails
-  jwt
-  pg
+  good_job (~> 3.21)
+  jbuilder (~> 2.11)
+  jwt (~> 2.8)
+  pg (~> 1.5)
   puma (>= 5.0)
-  rack-cors
+  rack-cors (~> 2.0)
   rails (~> 8.0.1)
+  redis (~> 5.0)
   rubocop-rails-omakase
   sqlite3 (~> 1.4)
   tzinfo-data

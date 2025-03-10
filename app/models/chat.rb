@@ -22,7 +22,11 @@ class Chat < ApplicationRecord
     chat
   end
   
-  def opposed_user(user)
-    user.id == sender_id ? recipient : sender
+  def participants
+    [sender, recipient]
+  end
+  
+  def opposed_user(current_user)
+    current_user.id == sender_id ? recipient : sender
   end
 end 

@@ -4,7 +4,7 @@ source "https://rubygems.org"
 gem "rails", "~> 8.0.1"
 
 # Use postgresql as the database
-gem "pg"
+gem "pg", "~> 1.5"
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
@@ -13,7 +13,7 @@ gem "puma", ">= 5.0"
 gem "tzinfo-data"
 
 # Reduces boot times through caching; required in config/boot.rb
-gem "bootsnap", require: false
+gem "bootsnap", "~> 1.18", require: false
 
 # Move dotenv-rails out of groups so it's available in production
 gem 'dotenv-rails'
@@ -23,11 +23,11 @@ gem 'dotenv-rails'
 
 # Remove solid gems that might be causing issues
 # gem "solid_cache"
-# gem "solid_queue"
+# gem "solid_queue", "~> 0.2.1"
 # gem "solid_cable"
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
-gem "rack-cors"
+gem "rack-cors", "~> 2.0"
 
 # Add cloudinary gem
 gem 'cloudinary'
@@ -36,12 +36,25 @@ gem 'cloudinary'
 # gem "aws-sdk-s3"
 # gem "image_processing"
 
+# API and serialization
+gem "jbuilder", "~> 2.11"
+
+# Authentication
+gem "bcrypt", "~> 3.1.20"
+gem "jwt", "~> 2.8"
+
+# Redis for Action Cable
+gem "redis", "~> 5.0"
+
+# Use good_job as an alternative to solid_queue
+gem "good_job", "~> 3.21"
+
 group :development, :test do
   # Use sqlite3 as the database for development/test
   gem "sqlite3", "~> 1.4"
   
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  gem "debug", "~> 1.9", platforms: %i[ mri mingw x64_mingw ]
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
@@ -50,8 +63,9 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 end
 
-gem 'bcrypt', '~> 3.1.7'
-
-gem "jwt"
+group :development do
+  # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
+  # gem "spring"
+end
 
 
