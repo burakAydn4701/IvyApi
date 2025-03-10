@@ -35,8 +35,11 @@ class ChatChannel < ApplicationCable::Channel
         body: data['message']
       )
 
+      # Log the message data for debugging
+      logger.info "Message created and broadcasting: #{message.id} - #{message.body}"
+      
       broadcast_message(message)
-      logger.info "Message created: ID #{message.id} in chat #{@chat_id} by user #{current_user.id}"
+      logger.info "Message broadcast completed for ID #{message.id} in chat #{@chat_id}"
     rescue => e
       logger.error "Error in ChatChannel#receive: #{e.message}"
       logger.error e.backtrace.join("\n")
@@ -46,18 +49,21 @@ class ChatChannel < ApplicationCable::Channel
   private
 
   def broadcast_message(message)
-    ActionCable.server.broadcast(
-      "chat_#{@chat_id}", 
-      {
-        id: message.id,
-        body: message.body,
-        created_at: message.created_at,
-        user: {
-          id: message.user.id,
-          username: message.user.username,
-          profile_photo_url: message.user.profile_photo_url
-        }
+    # Format the message in a consistent way with MessagesController
+    message_data = {
+      id: message.id,
+      body: message.body,
+      created_at: message.created_at,
+      user: {
+        id: message.user.id,
+        username: message.user.username,
+        profile_photo_url: message.user.profile_photo_url
       }
-    )
+    }
+    
+    # Log the data being broadcast
+    logger.info "Broadcasting message data: #{message_data.inspect}"
+    
+    ActionCable.server.broadcast("chat_#{@chat_id}", message_data)
   end
 end 

@@ -8,13 +8,16 @@ module Api
       @message.user = current_user
       
       if @message.save
+        # Format the message in a consistent way with ChatChannel
         message_data = {
           id: @message.id,
           body: @message.body,
-          user_id: @message.user_id,
           created_at: @message.created_at,
-          message_time: @message.message_time,
-          is_mine: false # Will be true for the sender, false for the recipient
+          user: {
+            id: current_user.id,
+            username: current_user.username,
+            profile_photo_url: current_user.profile_photo_url
+          }
         }
         
         # Broadcast the message to the chat channel
@@ -23,8 +26,7 @@ module Api
           message_data
         )
         
-        # Return the message with is_mine set to true for the sender
-        message_data[:is_mine] = true
+        # Return the same format to the sender
         render json: message_data, status: :created
       else
         render json: { errors: @message.errors.full_messages }, status: :unprocessable_entity
