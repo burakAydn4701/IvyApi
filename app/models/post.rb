@@ -1,12 +1,17 @@
 class Post < ApplicationRecord
   belongs_to :user
-  belongs_to :community
+  belongs_to :community, optional: true
   has_many :comments, dependent: :destroy
-  has_many :upvotes, as: :voteable, dependent: :destroy
+  has_many :upvotes, as: :upvotable, dependent: :destroy
   has_one_attached :image
   
   validates :title, presence: true
   validates :content, presence: true
+  
+  # Method to get post content (for backward compatibility)
+  def body
+    content
+  end
 
   # Add method to handle image upload
   def attach_image(image)

@@ -67,14 +67,15 @@ module Api
     end
 
     def post_params
-      params.require(:post).permit(:title, :body, :community_id)
+      # Use content instead of body since that's what the model has
+      params.require(:post).permit(:title, :content, :community_id, :image)
     end
 
     def post_json(post)
-      {
+      json = {
         id: post.id,
         title: post.title,
-        body: post.body,
+        content: post.content,
         created_at: post.created_at,
         updated_at: post.updated_at,
         user: {
@@ -89,6 +90,11 @@ module Api
         comments_count: post.comments.count,
         upvotes_count: post.upvotes.count
       }
+      
+      # Add image URL if present
+      json[:image_url] = post.image_url if post.respond_to?(:image_url) && post.image_url.present?
+      
+      json
     end
   end
 end 
