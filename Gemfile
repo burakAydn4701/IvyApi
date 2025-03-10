@@ -51,7 +51,7 @@ gem "good_job", "~> 3.21"
 
 group :development, :test do
   # Use sqlite3 as the database for development/test
-  gem "sqlite3", "~> 1.4"
+  gem "sqlite3", "~> 2.6"
   
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", "~> 1.9", platforms: %i[ mri mingw x64_mingw ]
