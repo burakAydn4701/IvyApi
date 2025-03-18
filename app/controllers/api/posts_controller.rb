@@ -5,20 +5,20 @@ module Api
     before_action :authorize_user, only: [:update, :destroy]
 
     def index
-      @posts = Post.includes(:user, :community).order(created_at: :desc)
+      @posts = Post.includes(:user, :community, :upvotes).order(created_at: :desc)
       
-      render json: @posts.map { |post| post_json(post) }
+      render json: @posts.map { |post| post_with_metadata(post) }
     end
 
     def show
-      render json: post_json(@post)
+      render json: post_with_metadata(@post)
     end
 
     def user_posts
       user = User.find(params[:user_id])
-      @posts = user.posts.includes(:community).order(created_at: :desc)
+      @posts = user.posts.includes(:community, :upvotes).order(created_at: :desc)
       
-      render json: @posts.map { |post| post_json(post) }
+      render json: @posts.map { |post| post_with_metadata(post) }
     rescue => e
       Rails.logger.error "Error in user_posts: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
@@ -34,7 +34,7 @@ module Api
       end
       
       if @post.save
-        render json: post_json(@post), status: :created
+        render json: post_with_metadata(@post), status: :created
       else
         render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
       end
@@ -47,7 +47,7 @@ module Api
       end
       
       if @post.update(post_params.except(:image))
-        render json: post_json(@post)
+        render json: post_with_metadata(@post)
       else
         render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
       end
@@ -64,14 +64,14 @@ module Api
         render json: { error: "Already upvoted" }, status: :unprocessable_entity
       else
         @post.upvotes.create(user: current_user)
-        render json: post_json(@post), status: :ok
+        render json: post_with_metadata(@post), status: :ok
       end
     end
 
     private
 
     def set_post
-      @post = Post.find(params[:id])
+      @post = Post.includes(:user, :community, :upvotes).find(params[:id])
     end
 
     def authorize_user
@@ -85,44 +85,27 @@ module Api
       params.require(:post).permit(:title, :content, :community_id, :image)
     end
 
-    def post_json(post)
-      begin
-        json = {
-          id: post.id,
-          title: post.title,
-          content: post.content,
-          created_at: post.created_at,
-          updated_at: post.updated_at,
-          user: {
-            id: post.user.id,
-            username: post.user.username,
-            profile_photo_url: post.user.profile_photo_url
-          },
-          community: post.community ? {
-            id: post.community.id,
-            name: post.community.name
-          } : nil,
-          comments_count: post.comments.count,
-          upvotes_count: post.upvotes_count
-        }
-        
-        # Add image URL if present
-        json[:image_url] = post.image_url if post.respond_to?(:image_url) && post.image_url.present?
-        
-        json
-      rescue => e
-        Rails.logger.error "Error in post_json for post #{post.id}: #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
-        # Return a simplified version if there's an error
-        {
-          id: post.id,
-          title: post.title,
-          content: post.content,
-          created_at: post.created_at,
-          updated_at: post.updated_at,
-          error: "Error loading complete post data"
-        }
-      end
+    def post_with_metadata(post)
+      {
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        created_at: post.created_at,
+        updated_at: post.updated_at,
+        image_url: post.image_url,
+        user: {
+          id: post.user.id,
+          username: post.user.username,
+          profile_photo_url: post.user.profile_photo_url
+        },
+        community: post.community ? {
+          id: post.community.id,
+          name: post.community.name
+        } : nil,
+        comments_count: post.comments.count,
+        upvotes_count: post.upvotes.size,
+        upvoted_by_current_user: current_user ? post.upvotes.exists?(user_id: current_user.id) : false
+      }
     end
   end
 end 
