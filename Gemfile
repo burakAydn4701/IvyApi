@@ -49,6 +49,11 @@ gem "redis", "~> 5.0"
 # Use good_job as an alternative to solid_queue
 gem "good_job", "~> 3.21"
 
+# For generating slugs
+gem 'friendly_id', '~> 5.5.0'
+# For generating public IDs
+gem 'nanoid'
+
 group :development, :test do
   # Use sqlite3 as the database for development/test
   gem "sqlite3", "~> 1.4"

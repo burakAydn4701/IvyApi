@@ -163,6 +163,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_10_124025) do
     t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
   end
 
+  create_table "message_notifications", force: :cascade do |t|
+    t.bigint "recipient_id", null: false
+    t.bigint "message_id", null: false
+    t.bigint "chat_id", null: false
+    t.boolean "read", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["chat_id"], name: "index_message_notifications_on_chat_id"
+    t.index ["message_id"], name: "index_message_notifications_on_message_id"
+    t.index ["recipient_id", "read"], name: "index_message_notifications_on_recipient_id_and_read"
+    t.index ["recipient_id"], name: "index_message_notifications_on_recipient_id"
+  end
+
   create_table "messages", force: :cascade do |t|
     t.text "body"
     t.bigint "chat_id"
@@ -172,6 +185,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_10_124025) do
     t.datetime "updated_at", null: false
     t.index ["chat_id"], name: "index_messages_on_chat_id"
     t.index ["user_id"], name: "index_messages_on_user_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.bigint "recipient_id", null: false
+    t.bigint "actor_id", null: false
+    t.string "action", null: false
+    t.string "notifiable_type", null: false
+    t.bigint "notifiable_id", null: false
+    t.boolean "read", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_notifications_on_actor_id"
+    t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable"
+    t.index ["recipient_id", "read"], name: "index_notifications_on_recipient_id_and_read"
+    t.index ["recipient_id"], name: "index_notifications_on_recipient_id"
   end
 
   create_table "posts", force: :cascade do |t|
@@ -214,8 +242,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_10_124025) do
   add_foreign_key "comments", "comments", column: "parent_id"
   add_foreign_key "comments", "posts"
   add_foreign_key "comments", "users"
+  add_foreign_key "message_notifications", "chats"
+  add_foreign_key "message_notifications", "messages"
+  add_foreign_key "message_notifications", "users", column: "recipient_id"
   add_foreign_key "messages", "chats"
   add_foreign_key "messages", "users"
+  add_foreign_key "notifications", "users", column: "actor_id"
+  add_foreign_key "notifications", "users", column: "recipient_id"
   add_foreign_key "posts", "communities"
   add_foreign_key "posts", "users"
   add_foreign_key "upvotes", "users"

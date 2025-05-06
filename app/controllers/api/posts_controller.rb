@@ -1,7 +1,7 @@
 module Api
   class PostsController < ApplicationController
     before_action :authenticate_user, except: [:index, :show, :user_posts]
-    before_action :set_post, only: [:show, :update, :destroy]
+    before_action :set_post, only: [:show, :update, :destroy, :upvote]
     before_action :authorize_user, only: [:update, :destroy]
 
     def index
@@ -59,7 +59,6 @@ module Api
     end
 
     def upvote
-      @post = Post.find(params[:id])
       if @post.upvotes.where(user: current_user).exists?
         render json: { error: "Already upvoted" }, status: :unprocessable_entity
       else
@@ -71,7 +70,9 @@ module Api
     private
 
     def set_post
-      @post = Post.includes(:user, :community, :upvotes).find(params[:id])
+      id_or_slug = params[:id].to_s.split('-').first
+      @post = Post.includes(:user, :community, :upvotes)
+                 .find_by!(public_id: id_or_slug)
     end
 
     def authorize_user
@@ -88,6 +89,9 @@ module Api
     def post_with_metadata(post)
       {
         id: post.id,
+        public_id: post.public_id,
+        slug: post.slug,
+        url: "/#{post.community.slug}/#{post.to_param}",
         title: post.title,
         content: post.content,
         created_at: post.created_at,
@@ -100,7 +104,8 @@ module Api
         },
         community: post.community ? {
           id: post.community.id,
-          name: post.community.name
+          name: post.community.name,
+          slug: post.community.slug
         } : nil,
         comments_count: post.comments.count,
         upvotes_count: post.upvotes.size,

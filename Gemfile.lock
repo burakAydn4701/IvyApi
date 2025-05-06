@@ -112,6 +112,8 @@ GEM
       multipart-post (~> 2.0)
     faraday-net_http (3.4.0)
       net-http (>= 0.5.0)
+    friendly_id (5.5.1)
+      activerecord (>= 4.0.0)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
@@ -152,6 +154,7 @@ GEM
     minitest (5.25.4)
     msgpack (1.8.0)
     multipart-post (2.4.1)
+    nanoid (2.0.0)
     net-http (0.6.0)
       uri
     net-imap (0.5.6)
@@ -318,9 +321,11 @@ DEPENDENCIES
   cloudinary
   debug (~> 1.9)
   dotenv-rails
+  friendly_id (~> 5.5.0)
   good_job (~> 3.21)
   jbuilder (~> 2.11)
   jwt (~> 2.8)
+  nanoid
   pg (~> 1.5)
   puma (>= 5.0)
   rack-cors (~> 2.0)

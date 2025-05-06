@@ -1,10 +1,14 @@
 class Community < ApplicationRecord
+  extend FriendlyId
+  friendly_id :name, use: :slugged
+
   # Validations
   validates :name, presence: true, uniqueness: true
   validates :description, presence: true
 
   # Associations
-  has_many :posts
+  belongs_to :user
+  has_many :posts, dependent: :destroy
 
   # Custom JSON representation
   def as_json(options = {})
@@ -38,5 +42,9 @@ class Community < ApplicationRecord
       Rails.logger.error "Cloudinary banner upload failed: #{e.message}"
       raise e
     end
+  end
+
+  def should_generate_new_friendly_id?
+    name_changed? || super
   end
 end

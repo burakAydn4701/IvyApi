@@ -6,6 +6,13 @@ class Comment < ApplicationRecord
   has_many :upvotes, as: :voteable, dependent: :destroy
 
   validates :content, presence: true
+  validates :public_id, presence: true, uniqueness: true
+
+  before_validation :set_public_id, on: :create
+
+  def to_param
+    public_id
+  end
 
   def upvote
     increment!(:upvotes_count)
@@ -13,6 +20,12 @@ class Comment < ApplicationRecord
 
   def upvoted_by_current_user(current_user)
     upvotes.exists?(user: current_user)
+  end
+
+  private
+
+  def set_public_id
+    self.public_id = Nanoid.generate(size: 10) if public_id.nil?
   end
 end
 

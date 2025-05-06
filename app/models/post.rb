@@ -1,4 +1,7 @@
 class Post < ApplicationRecord
+  extend FriendlyId
+  friendly_id :title, use: :slugged
+
   belongs_to :user
   belongs_to :community, optional: true
   has_many :comments, dependent: :destroy
@@ -7,7 +10,10 @@ class Post < ApplicationRecord
   
   validates :title, presence: true
   validates :content, presence: true
-  
+  validates :public_id, presence: true, uniqueness: true
+
+  before_validation :set_public_id, on: :create
+
   # Method to get post content (for backward compatibility)
   def body
     content
@@ -48,5 +54,19 @@ class Post < ApplicationRecord
     else
       upvotes.count
     end
+  end
+
+  def should_generate_new_friendly_id?
+    title_changed? || super
+  end
+
+  def to_param
+    "#{public_id}-#{slug}"
+  end
+
+  private
+
+  def set_public_id
+    self.public_id = Nanoid.generate(size: 10) if public_id.nil?
   end
 end
