@@ -1,6 +1,10 @@
 # app/controllers/api/communities_controller.rb
 module Api
   class CommunitiesController < ApplicationController
+    before_action :authenticate_user, except: [:index, :show]
+    before_action :set_community, only: [:show, :update, :destroy]
+    before_action :authorize_user, only: [:update, :destroy]
+
     # GET /api/communities
     def index
       @communities = Community.all
@@ -9,61 +13,32 @@ module Api
 
     # GET /api/communities/:id
     def show
-      @community = Community.find(params[:id])
-      
       render json: @community
     end
 
     # POST /api/communities
     def create
-      Rails.logger.info "Starting community creation..."
-      Rails.logger.info "Params: #{params.inspect}"
+      @community = current_user.communities.build(community_params)
       
-      @community = Community.new(community_params)
-      
-      begin
-        if params[:community][:profile_photo].present?
-          Rails.logger.info "Attempting to attach profile photo..."
-          @community.attach_profile_picture(params[:community][:profile_photo])
-        end
-        
-        if params[:community][:banner].present?
-          Rails.logger.info "Attempting to attach banner..."
-          @community.attach_banner(params[:community][:banner])
-        end
-
-        if @community.save
-          Rails.logger.info "Community created successfully!"
-          render json: @community, status: :created
-        else
-          Rails.logger.error "Failed to create community: #{@community.errors.full_messages}"
-          render json: { errors: @community.errors.full_messages }, status: :unprocessable_entity
-        end
-      rescue => e
-        Rails.logger.error "Error creating community: #{e.class} - #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
-        render json: { 
-          error: "Failed to create community", 
-          message: e.message,
-          backtrace: e.backtrace.first(5)
-        }, status: :internal_server_error
+      if @community.save
+        render json: @community, status: :created
+      else
+        render json: { errors: @community.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     # PATCH/PUT /api/communities/:id
     def update
-      community = Community.find(params[:id])
-      if community.update(community_params)
-        render json: community
+      if @community.update(community_params)
+        render json: @community
       else
-        render json: community.errors, status: :unprocessable_entity
+        render json: { errors: @community.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     # DELETE /api/communities/:id
     def destroy
-      community = Community.find(params[:id])
-      community.destroy
+      @community.destroy
       head :no_content
     end
 
@@ -82,10 +57,25 @@ module Api
       )
     end
 
+    def user_communities
+      @communities = current_user.communities
+      render json: @communities
+    end
+
     private
 
+    def set_community
+      @community = Community.friendly.find(params[:id])
+    end
+
+    def authorize_user
+      unless @community.user_id == current_user.id
+        render json: { error: "Not authorized to modify this community" }, status: :unauthorized
+      end
+    end
+
     def community_params
-      params.require(:community).permit(:name, :description)
+      params.require(:community).permit(:name, :description, :profile_photo, :banner)
     end
   end
 end

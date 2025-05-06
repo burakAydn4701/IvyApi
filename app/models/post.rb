@@ -10,9 +10,12 @@ class Post < ApplicationRecord
   
   validates :title, presence: true
   validates :content, presence: true
-  validates :public_id, presence: true, uniqueness: true
+  validates :public_id, presence: true, uniqueness: true, allow_nil: true
+  validates :community_id, presence: true
+  validates :user_id, presence: true
 
   before_validation :set_public_id, on: :create
+  before_create :generate_slug
 
   # Method to get post content (for backward compatibility)
   def body
@@ -21,15 +24,14 @@ class Post < ApplicationRecord
 
   # Updated method to handle image upload with WebP support
   def attach_image(image)
+    upload_options = {
+      resource_type: "auto",
+      allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"]
+    }
+    
     if image.present?
-      # Add WebP support with minimal changes
-      upload_options = {
-        resource_type: "auto",  # Auto-detect resource type
-        allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"]  # Explicitly allow webp
-      }
-      
-      result = Cloudinary::Uploader.upload(image, upload_options)
-      self.image_url = result['secure_url']
+      uploaded_image = Cloudinary::Uploader.upload(image, upload_options)
+      self.image_url = uploaded_image["secure_url"]
     end
   end
 
@@ -67,6 +69,39 @@ class Post < ApplicationRecord
   private
 
   def set_public_id
-    self.public_id = Nanoid.generate(size: 10) if public_id.nil?
+    return if public_id.present?
+    
+    # Use SecureRandom as a fallback if NanoidHelper is not defined
+    if defined?(NanoidHelper)
+      self.public_id = NanoidHelper.generate(size: 10)
+    else
+      require 'securerandom'
+      self.public_id = SecureRandom.alphanumeric(10)
+    end
+  end
+
+  def generate_slug
+    return if slug.present?
+    
+    base_slug = title.parameterize
+    self.slug = base_slug
+    
+    # Ensure uniqueness
+    counter = 1
+    while Post.exists?(slug: self.slug)
+      self.slug = "#{base_slug}-#{counter}"
+      counter += 1
+    end
+  end
+
+  def generate_public_id
+    return if public_id.present?
+    
+    self.public_id = SecureRandom.hex(5)
+    
+    # Ensure uniqueness
+    while Post.exists?(public_id: self.public_id)
+      self.public_id = SecureRandom.hex(5)
+    end
   end
 end

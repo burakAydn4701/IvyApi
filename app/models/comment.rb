@@ -6,7 +6,7 @@ class Comment < ApplicationRecord
   has_many :upvotes, as: :voteable, dependent: :destroy
 
   validates :content, presence: true
-  validates :public_id, presence: true, uniqueness: true
+  validates :public_id, uniqueness: true, allow_nil: true
 
   before_validation :set_public_id, on: :create
 
@@ -25,8 +25,17 @@ class Comment < ApplicationRecord
   private
 
   def set_public_id
-    self.public_id = Nanoid.generate(size: 10) if public_id.nil?
+    return if public_id.present?
+    
+    # Use SecureRandom as a fallback if NanoidHelper is not defined
+    if defined?(NanoidHelper)
+      self.public_id = NanoidHelper.generate(size: 10)
+    else
+      require 'securerandom'
+      self.public_id = SecureRandom.alphanumeric(10)
+    end
   end
 end
 
-Post.find_each { |post| Post.reset_counters(post.id, :comments) }
+# This line should be in a separate migration or rake task, not in the model file
+# Post.find_each { |post| Post.reset_counters(post.id, :comments) }

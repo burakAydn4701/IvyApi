@@ -1,17 +1,17 @@
 module Api
   class PostsController < ApplicationController
-    before_action :authenticate_user, except: [:index, :show, :user_posts]
+    before_action :authenticate_user!, except: [:index, :show, :user_posts]
     before_action :set_post, only: [:show, :update, :destroy, :upvote]
     before_action :authorize_user, only: [:update, :destroy]
 
     def index
-      @posts = Post.includes(:user, :community, :upvotes).order(created_at: :desc)
+      @posts = Post.all.order(created_at: :desc)
       
-      render json: @posts.map { |post| post_with_metadata(post) }
+      render json: @posts
     end
 
     def show
-      render json: post_with_metadata(@post)
+      render json: @post
     end
 
     def user_posts
@@ -26,34 +26,41 @@ module Api
     end
 
     def create
-      @post = current_user.posts.new(post_params.except(:image))
-      
-      # Handle image upload if present
-      if params[:post] && params[:post][:image].present?
-        @post.attach_image(params[:post][:image])
+      @post = Post.new(post_params.except(:image))
+      @post.user = current_user
+
+      if params[:image].present?
+        @post.attach_image(params[:image])
       end
-      
+
       if @post.save
-        render json: post_with_metadata(@post), status: :created
+        render json: @post, status: :created
       else
         render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def update
-      # Handle image update if present
-      if params[:post] && params[:post][:image].present?
-        @post.attach_image(params[:post][:image])
+      if @post.user_id != current_user.id
+        return render json: { error: 'You are not authorized to update this post' }, status: :unauthorized
       end
-      
+
       if @post.update(post_params.except(:image))
-        render json: post_with_metadata(@post)
+        if params[:image].present?
+          @post.attach_image(params[:image])
+          @post.save
+        end
+        render json: @post
       else
         render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def destroy
+      if @post.user_id != current_user.id
+        return render json: { error: 'You are not authorized to delete this post' }, status: :unauthorized
+      end
+      
       @post.destroy
       head :no_content
     end
@@ -70,9 +77,11 @@ module Api
     private
 
     def set_post
-      id_or_slug = params[:id].to_s.split('-').first
-      @post = Post.includes(:user, :community, :upvotes)
-                 .find_by!(public_id: id_or_slug)
+      @post = Post.find_by(id: params[:id]) || Post.find_by(slug: params[:id])
+      
+      unless @post
+        render json: { error: 'Post not found' }, status: :not_found
+      end
     end
 
     def authorize_user
@@ -82,8 +91,7 @@ module Api
     end
 
     def post_params
-      # Use content instead of body since that's what the model has
-      params.require(:post).permit(:title, :content, :community_id, :image)
+      params.permit(:title, :content, :community_id, :image)
     end
 
     def post_with_metadata(post)
