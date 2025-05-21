@@ -47,7 +47,7 @@ gem "jwt", "~> 2.8"
 gem "redis", "~> 5.0"
 
 # Use good_job as an alternative to solid_queue
-gem "good_job", "~> 3.21"
+gem "good_job", "~> 4.10"
 
 # For generating slugs
 gem 'friendly_id', '~> 5.5.0'
